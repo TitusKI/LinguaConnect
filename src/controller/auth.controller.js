@@ -1,7 +1,10 @@
 import { upsertStreamUser } from "../lib/stream.js";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 
+console.log(process.env.NODE_ENV);
 export async function signup(req, res) {
   const { email, fullName, password } = req.body;
 
@@ -27,7 +30,7 @@ export async function signup(req, res) {
       });
     }
     const idx = Math.floor(Math.random() * 100) + 1;
-    const randomAvatar = `https://avatar.iran.liara.run/public/${idx}`;
+    const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`;
     const newUser = await User.create({
       fullName,
       email,
@@ -54,10 +57,12 @@ export async function signup(req, res) {
       }
     );
     // send it as a cookies
+    // ToDo: set sameSite to strict
     res.cookie("jwt", token, {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true, // prevents XSS attacks
-      sameSite: "strict", // prevents CSRF attacks
+      sameSite: "None", // prevents CSRF attacks
+      // secure: false,
       secure: process.env.NODE_ENV === "production",
     });
     res.status(201).json({ success: true, user: newUser });
@@ -97,7 +102,8 @@ export async function login(req, res) {
     res.cookie("jwt", token, {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true, // prevents XSS attacks
-      sameSite: "strict", // prevents CSRF attacks
+      sameSite: "None", // prevents CSRF attacks
+      // secure: false,
       secure: process.env.NODE_ENV === "production",
     });
     res.status(200).json({
